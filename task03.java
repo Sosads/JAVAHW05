@@ -1,81 +1,117 @@
 /*
- * Реализовать алгоритм пирамидальной сортировки (HeapSort).
+ * На шахматной доске расставить 8 ферзей так, чтобы они не били друг друга.
  */
 
-import java.util.Arrays;
+import java.util.Random;
 
-public class task3 {
+public class task4 {
+    public static class Queen {
+        int x, y;
+        static int count = 0;
 
-    private static int LEFT(int i) {
-        return (2 * i + 1);
-    }
-
-    private static int RIGHT(int i) {
-        return (2 * i + 2);
-    }
-
-    private static void swap(int[] A, int i, int j) {
-        int temp = A[i];
-        A[i] = A[j];
-        A[j] = temp;
-    }
-
-    private static void heapify(int[] A, int i, int size) {
-
-        int left = LEFT(i);
-        int right = RIGHT(i);
-
-        int largest = i;
-
-        if (left < size && A[left] > A[i]) {
-            largest = left;
-        }
-
-        if (right < size && A[right] > A[largest]) {
-            largest = right;
-        }
-
-        if (largest != i) {
-            swap(A, i, largest);
-            heapify(A, largest, size);
+        public Queen(Board board) {
+            while (true) {
+                // System.out.println("Создаем ферзя");
+                Random rnd = new Random();
+                int x = rnd.nextInt(8);
+                int y = rnd.nextInt(8);
+                if (board.cell[x][y] == 0) {
+                    this.x = x;
+                    this.y = y;
+                    count++;
+                    break;
+                }
+            }
         }
     }
 
-    public static int pop(int[] A, int size) {
+    public static class Board {
+        int size;
+        int[][] cell;
 
-        if (size <= 0) {
-            return -1;
+        public Board(int size) {
+            this.size = size;
+            this.cell = new int[this.size][this.size];
         }
 
-        int top = A[0];
+        public void addQueen(Queen queen, int index) {
+            this.cell[queen.x][queen.y] = index + 2;
+            for (int i = 1; i < 8; i++) {
+                int x = queen.x;
+                int y = queen.y;
+                if ((x + i) < 8 && (y + i) < 8 && (x + i) >= 0 && (y + i) >= 0 && this.cell[x + i][y + i] == 0) {
+                    this.cell[x + i][y + i] = 1;
+                }
+                if ((x + i) < 8 && (y - i) < 8 && (x + i) >= 0 && (y - i) >= 0 && this.cell[x + i][y - i] == 0) {
+                    this.cell[x + i][y - i] = 1;
+                }
+                if ((y + i) < 8 && (y + i) >= 0 && this.cell[x][y + i] == 0) {
+                    this.cell[x][y + i] = 1;
+                }
+                if ((y - i) < 8 && (y - i) >= 0 && this.cell[x][y - i] == 0) {
+                    this.cell[x][y - i] = 1;
+                }
+                if ((x - i) < 8 && (y + i) < 8 && (x - i) >= 0 && (y + i) >= 0 && this.cell[x - i][y + i] == 0) {
+                    this.cell[x - i][y + i] = 1;
+                }
+                if ((x - i) < 8 && (y - i) < 8 && (x - i) >= 0 && (y - i) >= 0 && this.cell[x - i][y - i] == 0) {
+                    this.cell[x - i][y - i] = 1;
+                }
+                if ((x + i) < 8 && (x + i) >= 0 && this.cell[x + i][y] == 0) {
+                    this.cell[x + i][y] = 1;
+                }
+                if ((x - i) < 8 && (x - i) >= 0 && this.cell[x - i][y] == 0) {
+                    this.cell[x - i][y] = 1;
+                }
+            }
+        }
 
-        A[0] = A[size - 1];
+        public boolean checkBoard() {
+            for (int[] row : this.cell) {
+                for (int elem : row) {
+                    if (elem == 0) {
+                        return false;
+                    }
+                }
+            }
+            return true;
+        }
 
-        heapify(A, 0, size - 1);
-
-        return top;
+        public void print() {
+            for (int i = 0; i < this.size; i++) {
+                for (int j = 0; j < this.size; j++) {
+                    if (this.cell[j][i] == 0 || this.cell[j][i] == 1) {
+                        System.out.print(" - ");
+                    } else {
+                        System.out.printf(" %d ", this.cell[j][i] - 1);
+                    }
+                }
+                System.out.println();
+            }
+            System.out.println();
+        }
     }
 
-    public static void heapsort(int[] A) {
+    public static void start() {
+        int size = 8;
+        Board board = new Board(size);
+        nextTurn(board);
+    }
 
-        int n = A.length;
-
-        int i = (n - 2) / 2;
-        while (i >= 0) {
-            heapify(A, i--, n);
+    public static void nextTurn(Board board) {
+        Queen[] queens = new Queen[8];
+        for (int i = 0; i < 8; i++) {
+            if (board.checkBoard()) {
+                start();
+                return;
+            }
+            queens[i] = new Queen(board);
+            board.addQueen(queens[i], i);
         }
-
-        while (n > 0) {
-            A[n - 1] = pop(A, n);
-            n--;
-        }
+        board.print();
     }
 
     public static void main(String[] args) {
-        int[] A = { 8, 4, 7, 1, 9, 5 };
-
-        heapsort(A);
-
-        System.out.println(Arrays.toString(A));
+        start();
     }
 }
